@@ -1,5 +1,3 @@
-use std::arch::x86_64::_SIDD_LEAST_SIGNIFICANT;
-
 use bevy::prelude::*;
 
 #[derive(Component)]
