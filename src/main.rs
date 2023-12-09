@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{a11y::accesskit::Point, prelude::*};
 
 #[derive(Component)]
 struct Position {
@@ -42,15 +42,23 @@ fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Na
 }
 
 fn main() {
-    App::new().add_plugins((DefaultPlugins, HelloPlugin)).run();
+    App::new().add_plugins((DefaultPlugins, HelloPlugin, GameSetPlugin)).run();
 }
 
 pub struct HelloPlugin;
 
+pub struct GameSetPlugin;
+
+impl Plugin for GameSetPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, (spawn_floor, spawn_camera, spawn_light));
+    }
+}
+
 impl Plugin for HelloPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
-            .add_systems(Startup, (spawn_floor, spawn_camera, add_people))
+            .add_systems(Startup, add_people)
             .add_systems(Update, greet_people);
     }
 }
@@ -75,4 +83,16 @@ fn spawn_camera(mut commands: Commands) {
     };
 
     commands.spawn(camera);
+}
+
+fn spawn_light(mut commands: Commands) {
+    let light = PointLightBundle {
+        point_light: PointLight {
+            intensity: 2000.0,
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 5.0, 0.0),
+        ..default()
+    };
+    commands.spawn(light);
 }
