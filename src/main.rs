@@ -1,4 +1,12 @@
-use bevy::{a11y::accesskit::Point, prelude::*};
+use bevy::prelude::*;
+
+mod player;
+mod camera;
+mod world;
+
+use player::PlayerPlugin;
+use camera::CameraPlugin;
+use world::WorldPlugin;
 
 #[derive(Component)]
 struct Position {
@@ -29,10 +37,6 @@ struct Entity(u64);
 #[derive(Resource)]
 struct GreetTimer(Timer);
 
-fn hello_world() {
-    println!("Hello, world!");
-}
-
 fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
     if timer.0.tick(time.delta()).just_finished() {
         for name in &query {
@@ -42,18 +46,12 @@ fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Na
 }
 
 fn main() {
-    App::new().add_plugins((DefaultPlugins, HelloPlugin, GameSetPlugin)).run();
+    App::new()
+        .add_plugins((DefaultPlugins, HelloPlugin, WorldPlugin, CameraPlugin, PlayerPlugin))
+        .run();
 }
 
 pub struct HelloPlugin;
-
-pub struct GameSetPlugin;
-
-impl Plugin for GameSetPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_floor, spawn_camera, spawn_light));
-    }
-}
 
 impl Plugin for HelloPlugin {
     fn build(&self, app: &mut App) {
@@ -61,38 +59,4 @@ impl Plugin for HelloPlugin {
             .add_systems(Startup, add_people)
             .add_systems(Update, greet_people);
     }
-}
-
-fn spawn_floor(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let floor = PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane::from_size(15.0))),
-        material: materials.add(Color::DARK_GREEN.into()),
-        ..default()
-    };
-    commands.spawn(floor);
-}
-
-fn spawn_camera(mut commands: Commands) {
-    let camera = Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    };
-
-    commands.spawn(camera);
-}
-
-fn spawn_light(mut commands: Commands) {
-    let light = PointLightBundle {
-        point_light: PointLight {
-            intensity: 2000.0,
-            ..default()
-        },
-        transform: Transform::from_xyz(0.0, 5.0, 0.0),
-        ..default()
-    };
-    commands.spawn(light);
 }
